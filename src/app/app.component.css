@@ -1,0 +1,29 @@
+.touchBtn button{
+    background:#151A24;
+    color: white;
+    outline: none;
+    border: none;
+}
+.touchBtn button:hover{
+    background:#323c4d;
+}
+.menus a{
+    text-decoration: none;
+    font-weight: 400;
+    color: black;
+    transition: 0.5s ease ;
+    font-weight: 500;
+}
+.menus a:nth-child(1):active{
+    color: blue;
+}
+
+.menus a:hover{
+    
+    color: blue;
+}
+.navbar{
+    padding: 20px 10px;
+    backdrop-filter: blur(15px);
+    
+}

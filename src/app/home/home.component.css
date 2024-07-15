@@ -1,0 +1,36 @@
+.home{
+    height: 100%;
+    max-width: 1440px;
+    /* background: rgb(233, 173, 173);  */
+    margin-top: 80px;
+}
+.home h1{
+   
+    padding: 50px 10px 10px 10px;
+    font-size:90px;
+    font-weight:800 ;
+    
+}
+
+.getstr-btn {
+    background:#0d0c22;
+    color: white;
+    outline: none;
+    border: none;
+}
+
+.getstr-btn:hover{
+    background:#465368;
+}
+
+.card{
+    width: 270px;
+    height: 340px;
+    background: #000;
+    border-radius: 30px;
+}
+
+.services h3{
+    color: blue;
+}
+
