@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
@@ -7,13 +7,13 @@ import { isPlatformBrowser } from '@angular/common';
   styleUrls: ['./about.component.css'],
 })
 export class AboutComponent implements OnInit, AfterViewInit {
-  clientsCount: number = 80;
-  locationsCount: number = 0;
-  clientsTarget: number = 1000;
-  locationsTarget: number = 10;
-  duration: number = 2000;
-  clientsIncrementTime: number;
-  locationsIncrementTime: number;
+  clientsCount = 800;
+  locationsCount = 0;
+  clientsTarget = 1000;
+  locationsTarget = 10;
+  duration = 2000;
+  clientsIncrementTime = Math.floor(this.duration / this.clientsTarget);
+  locationsIncrementTime = Math.floor(this.duration / this.locationsTarget);
 
   @ViewChild('whyUsSection') whyUsSection!: ElementRef;
 
@@ -24,107 +24,95 @@ export class AboutComponent implements OnInit, AfterViewInit {
     { id: 'whyUs4', title: 'Proven Results', description: 'Our results speak for themselves, with a portfolio of successful projects and satisfied clients.' },
   ];
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.clientsIncrementTime = Math.floor(this.duration / this.clientsTarget);
-    this.locationsIncrementTime = Math.floor(this.duration / this.locationsTarget);
-  }
+  slides = [
+    { id: 'slide1', title: 'Our Commitment', content: 'We are committed to delivering value and making a difference through our dedicated efforts and unwavering principles. Our commitments drive us to achieve excellence and build trust with our stakeholders.', number: 1, image: 'Commitment.jpg' },
+    { id: 'slide2', title: 'Our Capabilities', content: 'Our capabilities encompass a wide range of skills and expertise, allowing us to provide comprehensive solutions tailored to meet the unique needs of our clients.', number: 2, image: 'Capabilities.avif' },
+    { id: 'slide3', title: 'Our Achievements', content: 'We take pride in our accomplishments and the recognition we have received for our contributions and excellence.', number: 3, image: 'Achievements.avif' },
+  ];
+
+  activeSlide = 'slide1';
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit(): void {
-    this.incrementClientsCounter();
-    this.incrementLocationsCounter();
+    if (isPlatformBrowser(this.platformId)) {
+      this.incrementClientsCounter();
+      this.incrementLocationsCounter();
+    }
   }
-
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeIntersectionObserver();
     }
   }
-
   incrementClientsCounter(): void {
-    if (this.clientsCount < this.clientsTarget) {
-      this.clientsCount += 1;
-      setTimeout(() => this.incrementClientsCounter(), this.clientsIncrementTime);
-    } else {
-      this.clientsCount = this.clientsTarget;
+    if (isPlatformBrowser(this.platformId)) {
+      const update = () => {
+        if (this.clientsCount < this.clientsTarget) {
+          this.clientsCount += 1;
+          requestAnimationFrame(update);
+        } else {
+          this.clientsCount = this.clientsTarget;
+        }
+      };
+      update();
     }
   }
-
   incrementLocationsCounter(): void {
-    if (this.locationsCount < this.locationsTarget) {
-      this.locationsCount += 1;
-      setTimeout(() => this.incrementLocationsCounter(), this.locationsIncrementTime);
-    } else {
-      this.locationsCount = this.locationsTarget;
+    if (isPlatformBrowser(this.platformId)) {
+      const update = () => {
+        if (this.locationsCount < this.locationsTarget) {
+          this.locationsCount += 1;
+          requestAnimationFrame(update);
+        } else {
+          this.locationsCount = this.locationsTarget;
+        }
+      };
+      update();
     }
   }
 
-  slides = [
-    { id: 'slide1', title: 'Our Commitment', content: 'We are committed to delivering value and making a difference through our dedicated efforts and unwavering principles. Our commitments drive us to achieve excellence and build trust with our stakeholders.', number: 1 },
-    { id: 'slide2', title: 'Our Capabilities', content: 'Our capabilities encompass a wide range of skills and expertise, allowing us to provide comprehensive solutions tailored to meet the unique needs of our clients.', number: 2 },
-    { id: 'slide3', title: 'Our Achievements', content: 'We take pride in our accomplishments and the recognition we have received for our contributions and excellence.', number: 3 },
-  ];
-  activeSlide = 'slide1';
-
-  showSlide(slideId: string) {
+  showSlide(slideId: string): void {
     this.activeSlide = slideId;
   }
 
-  private initializeIntersectionObserver() {
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-
+  private initializeIntersectionObserver(): void {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const element = entry.target as HTMLElement;
-          element.classList.add('animated');
-
-          if (element.classList.contains('why-us')) {
+          (entry.target as HTMLElement).classList.add('animated'); 
+          if ((entry.target as HTMLElement).classList.contains('why-us')) {
             this.animateWhyUsSection();
           } else {
-            const points = (element.querySelector('.vision-points') as HTMLElement)?.querySelectorAll('li');
-            points?.forEach((point, index) => {
-              (point as HTMLElement).style.animationDelay = `${index * 0.5 + 0.5}s`;
-              (point as HTMLElement).classList.add('animated');
-            });
+            this.animateVisionPoints(entry.target as HTMLElement); 
           }
         } else {
-          const element = entry.target as HTMLElement;
-          element.classList.remove('animated');
-
-          if (element.classList.contains('why-us')) {
+          (entry.target as HTMLElement).classList.remove('animated'); 
+          if ((entry.target as HTMLElement).classList.contains('why-us')) {
             this.resetWhyUsSection();
           } else {
-            const points = (element.querySelector('.vision-points') as HTMLElement)?.querySelectorAll('li');
-            points?.forEach((point) => {
-              (point as HTMLElement).style.animationDelay = '';
-              (point as HTMLElement).classList.remove('animated');
-            });
+            this.resetVisionPoints(entry.target as HTMLElement); 
           }
         }
       });
-    }, observerOptions);
-
-    const visionSection = document.querySelector('.Vision');
-    if (visionSection) {
-      observer.observe(visionSection);
-    }
-
-    const whyUsSection = this.whyUsSection?.nativeElement;
-    if (whyUsSection) {
-      observer.observe(whyUsSection);
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    });
+  
+    const visionSection = document.querySelector('.Vision') as HTMLElement | null;
+    if (visionSection) observer.observe(visionSection);
+  
+    if (this.whyUsSection) {
+      observer.observe(this.whyUsSection.nativeElement);
     }
   }
-
-  private animateWhyUsSection() {
+  private animateWhyUsSection(): void {
     if (this.whyUsSection) {
       const points = this.whyUsSection.nativeElement.querySelectorAll('.why-us-point');
       const linesContainer = this.whyUsSection.nativeElement.querySelector('.why-us-lines') as HTMLElement;
 
-    
       linesContainer.innerHTML = '';
 
       points.forEach((point: HTMLElement, index: number) => {
@@ -151,27 +139,36 @@ export class AboutComponent implements OnInit, AfterViewInit {
           line.classList.add('visible');
           linesContainer.appendChild(line);
         }
-      });
-
-     
+      });                                                                                                              
       points.forEach((point: HTMLElement) => {
         point.classList.add('animated');
       });
     }
   }
-
-  private resetWhyUsSection() {
+  private resetWhyUsSection(): void {
     if (this.whyUsSection) {
       const points = this.whyUsSection.nativeElement.querySelectorAll('.why-us-point');
       const linesContainer = this.whyUsSection.nativeElement.querySelector('.why-us-lines') as HTMLElement;
 
-    
       linesContainer.innerHTML = '';
 
-     
       points.forEach((point: HTMLElement) => {
         point.classList.remove('animated');
       });
     }
+  }
+  private animateVisionPoints(element: HTMLElement): void {
+    const points = (element.querySelector('.vision-points') as HTMLElement)?.querySelectorAll('li');
+    points?.forEach((point, index) => {
+      (point as HTMLElement).style.animationDelay = `${index * 0.5 + 0.5}s`;
+      (point as HTMLElement).classList.add('animated');
+    });
+  }
+  private resetVisionPoints(element: HTMLElement): void {
+    const points = (element.querySelector('.vision-points') as HTMLElement)?.querySelectorAll('li');
+    points?.forEach((point) => {
+      (point as HTMLElement).style.animationDelay = '';
+      (point as HTMLElement).classList.remove('animated');
+    });
   }
 }
